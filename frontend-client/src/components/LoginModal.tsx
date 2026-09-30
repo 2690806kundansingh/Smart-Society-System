@@ -1,0 +1,320 @@
+import React, { useState } from 'react';
+import { useAuthStore } from '../store/authStore';
+import { authApi } from '../services/api';
+import { Shield, Wrench, Home, X, KeyRound, Loader2, UserPlus, LogIn } from 'lucide-react';
+
+interface LoginModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+}
+
+export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
+  const { setAuth } = useAuthStore();
+  const [isRegisterMode, setIsRegisterMode] = useState(false);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [fullName, setFullName] = useState('');
+  const [blockName, setBlockName] = useState('A');
+  const [flatNumber, setFlatNumber] = useState('101');
+  const [role, setRole] = useState('ROLE_RESIDENT');
+  const [department, setDepartment] = useState('PLUMBING');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  if (!isOpen) return null;
+
+  const handleLogin = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await authApi.login({ email, password });
+      setAuth(response);
+      onClose();
+    } catch (err: any) {
+      setError(err.response?.data?.detail || 'Invalid email or password. Please verify credentials.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleRegister = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await authApi.register({
+        email,
+        password,
+        fullName,
+        societyId: 1,
+        role,
+        blockName: role === 'ROLE_RESIDENT' ? blockName : undefined,
+        flatNumber: role === 'ROLE_RESIDENT' ? flatNumber : undefined,
+        department: role === 'ROLE_STAFF' ? department : undefined,
+      });
+      setAuth(response);
+      onClose();
+    } catch (err: any) {
+      setError(err.response?.data?.detail || 'Registration failed. Email may already be taken.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const selectDemoPersona = async (demoEmail: string) => {
+    setEmail(demoEmail);
+    setPassword('Password@123');
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await authApi.login({ email: demoEmail, password: 'Password@123' });
+      setAuth(response);
+      onClose();
+    } catch (err: any) {
+      setError('Unable to log in with persona. Ensure backend services are running.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+      <div className="bg-white rounded-2xl max-w-lg w-full shadow-2xl border border-slate-100 overflow-hidden animate-scale-up">
+        {/* Header */}
+        <div className="p-6 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
+          <div className="flex items-center space-x-2">
+            <div className="w-8 h-8 rounded-lg bg-emerald-600 flex items-center justify-center text-white">
+              <KeyRound className="w-4 h-4" />
+            </div>
+            <div>
+              <h3 className="text-base font-bold text-slate-900">
+                {isRegisterMode ? 'Create New Account' : 'Sign In to Smart Society'}
+              </h3>
+              <p className="text-xs text-slate-500">
+                Enterprise complaint and SLA management portal
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={onClose}
+            className="text-slate-400 hover:text-slate-600 p-1 rounded-lg"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+
+        <div className="p-6 space-y-6">
+          {error && (
+            <div className="p-3 rounded-lg bg-red-50 border border-red-200 text-xs text-red-700">
+              {error}
+            </div>
+          )}
+
+          {/* Quick Demo Persona Switcher (High priority for testing!) */}
+          {!isRegisterMode && (
+            <div>
+              <label className="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-2">
+                ⚡ Instant Demo Persona (One-Click Login)
+              </label>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={() => selectDemoPersona('admin@smartsociety.com')}
+                  disabled={loading}
+                  className="flex items-center p-2.5 rounded-lg border border-purple-200 bg-purple-50/60 hover:bg-purple-100 text-left transition-all group"
+                >
+                  <Shield className="w-4 h-4 text-purple-600 mr-2 flex-shrink-0" />
+                  <div>
+                    <div className="text-xs font-semibold text-purple-900">Admin</div>
+                    <div className="text-[10px] text-purple-600">Full SLA control & KPIs</div>
+                  </div>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => selectDemoPersona('plumber@smartsociety.com')}
+                  disabled={loading}
+                  className="flex items-center p-2.5 rounded-lg border border-amber-200 bg-amber-50/60 hover:bg-amber-100 text-left transition-all group"
+                >
+                  <Wrench className="w-4 h-4 text-amber-600 mr-2 flex-shrink-0" />
+                  <div>
+                    <div className="text-xs font-semibold text-amber-900">Staff (Plumber)</div>
+                    <div className="text-[10px] text-amber-600">Accept & complete tickets</div>
+                  </div>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => selectDemoPersona('electrician@smartsociety.com')}
+                  disabled={loading}
+                  className="flex items-center p-2.5 rounded-lg border border-amber-200 bg-amber-50/60 hover:bg-amber-100 text-left transition-all group"
+                >
+                  <Wrench className="w-4 h-4 text-amber-600 mr-2 flex-shrink-0" />
+                  <div>
+                    <div className="text-xs font-semibold text-amber-900">Staff (Electrician)</div>
+                    <div className="text-[10px] text-amber-600">Accept & complete tickets</div>
+                  </div>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => selectDemoPersona('resident1@smartsociety.com')}
+                  disabled={loading}
+                  className="flex items-center p-2.5 rounded-lg border border-emerald-200 bg-emerald-50/60 hover:bg-emerald-100 text-left transition-all group"
+                >
+                  <Home className="w-4 h-4 text-emerald-600 mr-2 flex-shrink-0" />
+                  <div>
+                    <div className="text-xs font-semibold text-emerald-900">Resident (Flat A-101)</div>
+                    <div className="text-[10px] text-emerald-600">Raise issues & track SLA</div>
+                  </div>
+                </button>
+              </div>
+              <div className="text-center my-3 relative">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-slate-200"></div>
+                </div>
+                <span className="relative px-3 bg-white text-[11px] text-slate-400 font-medium uppercase">
+                  Or sign in with custom credentials
+                </span>
+              </div>
+            </div>
+          )}
+
+          {/* Form */}
+          <form onSubmit={isRegisterMode ? handleRegister : handleLogin} className="space-y-4">
+            {isRegisterMode && (
+              <>
+                <div>
+                  <label className="block text-xs font-medium text-slate-700 mb-1">Full Name</label>
+                  <input
+                    type="text"
+                    required
+                    value={fullName}
+                    onChange={(e) => setFullName(e.target.value)}
+                    placeholder="e.g. John Doe"
+                    className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-medium text-slate-700 mb-1">Account Role</label>
+                    <select
+                      value={role}
+                      onChange={(e) => setRole(e.target.value)}
+                      className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none"
+                    >
+                      <option value="ROLE_RESIDENT">Resident</option>
+                      <option value="ROLE_STAFF">Staff</option>
+                      <option value="ROLE_ADMIN">Admin</option>
+                    </select>
+                  </div>
+                  {role === 'ROLE_STAFF' ? (
+                    <div>
+                      <label className="block text-xs font-medium text-slate-700 mb-1">Department</label>
+                      <select
+                        value={department}
+                        onChange={(e) => setDepartment(e.target.value)}
+                        className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none"
+                      >
+                        <option value="PLUMBING">Plumbing</option>
+                        <option value="ELECTRICAL">Electrical</option>
+                        <option value="CLEANING">Cleaning</option>
+                        <option value="GENERAL">General</option>
+                      </select>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-2 gap-1.5">
+                      <div>
+                        <label className="block text-xs font-medium text-slate-700 mb-1">Block</label>
+                        <input
+                          type="text"
+                          value={blockName}
+                          onChange={(e) => setBlockName(e.target.value)}
+                          className="w-full px-2 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-medium text-slate-700 mb-1">Flat</label>
+                        <input
+                          type="text"
+                          value={flatNumber}
+                          onChange={(e) => setFlatNumber(e.target.value)}
+                          className="w-full px-2 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none"
+                        />
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </>
+            )}
+
+            <div>
+              <label className="block text-xs font-medium text-slate-700 mb-1">Email Address</label>
+              <input
+                type="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="name@smartsociety.com"
+                className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-medium text-slate-700 mb-1">Password</label>
+              <input
+                type="password"
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="••••••••"
+                className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none"
+              />
+            </div>
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full py-2.5 px-4 bg-emerald-600 hover:bg-emerald-700 text-white font-medium rounded-lg text-sm transition-colors shadow-sm flex items-center justify-center space-x-2 disabled:opacity-50"
+            >
+              {loading ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <span>Processing...</span>
+                </>
+              ) : isRegisterMode ? (
+                <>
+                  <UserPlus className="w-4 h-4" />
+                  <span>Register Account</span>
+                </>
+              ) : (
+                <>
+                  <LogIn className="w-4 h-4" />
+                  <span>Sign In</span>
+                </>
+              )}
+            </button>
+          </form>
+
+          {/* Toggle Register / Login */}
+          <div className="text-center pt-2">
+            <button
+              type="button"
+              onClick={() => {
+                setIsRegisterMode(!isRegisterMode);
+                setError(null);
+              }}
+              className="text-xs text-emerald-700 hover:text-emerald-800 font-semibold"
+            >
+              {isRegisterMode
+                ? 'Already have an account? Sign in here'
+                : 'Need an account? Register as Resident or Staff'}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
