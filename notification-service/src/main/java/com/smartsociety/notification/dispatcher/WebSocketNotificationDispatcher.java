@@ -2,24 +2,27 @@ package com.smartsociety.notification.dispatcher;
 
 import com.smartsociety.notification.dto.NotificationDto;
 import com.smartsociety.notification.event.ComplaintEventPayload;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-@Slf4j
 @Service
-@RequiredArgsConstructor
 public class WebSocketNotificationDispatcher {
+
+    private static final Logger log = LoggerFactory.getLogger(WebSocketNotificationDispatcher.class);
 
     private final SimpMessagingTemplate messagingTemplate;
     private final List<NotificationDto> recentNotifications = new CopyOnWriteArrayList<>();
+
+    public WebSocketNotificationDispatcher(SimpMessagingTemplate messagingTemplate) {
+        this.messagingTemplate = messagingTemplate;
+    }
 
     public void dispatch(ComplaintEventPayload payload) {
         String eventType = payload.getEventType();

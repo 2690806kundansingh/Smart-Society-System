@@ -4,22 +4,27 @@ import com.smartsociety.complaint.dto.*;
 import com.smartsociety.complaint.service.ComplaintService;
 import com.smartsociety.complaint.service.DashboardStatsService;
 import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@Slf4j
 @RestController
 @RequestMapping("/api/v1/complaints")
-@RequiredArgsConstructor
 public class ComplaintController {
+
+    private static final Logger log = LoggerFactory.getLogger(ComplaintController.class);
 
     private final ComplaintService complaintService;
     private final DashboardStatsService dashboardStatsService;
+
+    public ComplaintController(ComplaintService complaintService, DashboardStatsService dashboardStatsService) {
+        this.complaintService = complaintService;
+        this.dashboardStatsService = dashboardStatsService;
+    }
 
     @PostMapping
     public ResponseEntity<ComplaintResponse> createComplaint(

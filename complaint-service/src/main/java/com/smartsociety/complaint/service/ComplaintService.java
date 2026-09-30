@@ -15,8 +15,8 @@ import com.smartsociety.complaint.repository.CategoryRepository;
 import com.smartsociety.complaint.repository.ComplaintAuditLogRepository;
 import com.smartsociety.complaint.repository.ComplaintRepository;
 import com.smartsociety.complaint.repository.FeedbackRatingRepository;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,10 +24,10 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 
-@Slf4j
 @Service
-@RequiredArgsConstructor
 public class ComplaintService {
+
+    private static final Logger log = LoggerFactory.getLogger(ComplaintService.class);
 
     private final ComplaintRepository complaintRepository;
     private final CategoryRepository categoryRepository;
@@ -37,6 +37,24 @@ public class ComplaintService {
     private final ComplaintEventProducer eventProducer;
     private final DashboardStatsService dashboardStatsService;
     private final UserClient userClient;
+
+    public ComplaintService(ComplaintRepository complaintRepository,
+                            CategoryRepository categoryRepository,
+                            ComplaintAuditLogRepository auditLogRepository,
+                            FeedbackRatingRepository feedbackRatingRepository,
+                            PriorityPredictionEngine priorityPredictionEngine,
+                            ComplaintEventProducer eventProducer,
+                            DashboardStatsService dashboardStatsService,
+                            UserClient userClient) {
+        this.complaintRepository = complaintRepository;
+        this.categoryRepository = categoryRepository;
+        this.auditLogRepository = auditLogRepository;
+        this.feedbackRatingRepository = feedbackRatingRepository;
+        this.priorityPredictionEngine = priorityPredictionEngine;
+        this.eventProducer = eventProducer;
+        this.dashboardStatsService = dashboardStatsService;
+        this.userClient = userClient;
+    }
 
     @Transactional
     public ComplaintResponse createComplaint(CreateComplaintRequest request, Long residentId, Long societyId) {

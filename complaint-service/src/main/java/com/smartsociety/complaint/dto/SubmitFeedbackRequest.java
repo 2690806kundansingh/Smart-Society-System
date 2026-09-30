@@ -3,15 +3,7 @@ package com.smartsociety.complaint.dto;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 
-@Data
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
 public class SubmitFeedbackRequest {
 
     @NotNull(message = "Rating is required")
@@ -20,4 +12,33 @@ public class SubmitFeedbackRequest {
     private Integer rating;
 
     private String review;
+
+    public SubmitFeedbackRequest() {}
+
+    public SubmitFeedbackRequest(Integer rating, String review) {
+        this.rating = rating;
+        this.review = review;
+    }
+
+    public static SubmitFeedbackRequestBuilder builder() {
+        return new SubmitFeedbackRequestBuilder();
+    }
+
+    public static class SubmitFeedbackRequestBuilder {
+        private Integer rating;
+        private String review;
+
+        public SubmitFeedbackRequestBuilder rating(Integer rating) { this.rating = rating; return this; }
+        public SubmitFeedbackRequestBuilder review(String review) { this.review = review; return this; }
+
+        public SubmitFeedbackRequest build() {
+            return new SubmitFeedbackRequest(rating, review);
+        }
+    }
+
+    public Integer getRating() { return rating; }
+    public void setRating(Integer rating) { this.rating = rating; }
+
+    public String getReview() { return review; }
+    public void setReview(String review) { this.review = review; }
 }

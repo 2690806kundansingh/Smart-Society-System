@@ -3,7 +3,6 @@ package com.smartsociety.user.controller;
 import com.smartsociety.user.dto.UserProfileResponse;
 import com.smartsociety.user.entity.Department;
 import com.smartsociety.user.service.UserService;
-import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
@@ -13,10 +12,13 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/users")
-@RequiredArgsConstructor
 public class UserController {
 
     private final UserService userService;
+
+    public UserController(UserService userService) {
+        this.userService = userService;
+    }
 
     @GetMapping("/me")
     public ResponseEntity<UserProfileResponse> getCurrentUser(Authentication authentication) {

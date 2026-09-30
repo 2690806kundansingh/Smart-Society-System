@@ -2,17 +2,18 @@ package com.smartsociety.complaint.engine;
 
 import com.smartsociety.complaint.entity.Category;
 import com.smartsociety.complaint.entity.Priority;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.time.Duration;
 import java.time.Instant;
-import java.util.List;
 import java.util.Set;
 
-@Slf4j
 @Component
 public class PriorityPredictionEngine {
+
+    private static final Logger log = LoggerFactory.getLogger(PriorityPredictionEngine.class);
 
     private static final Set<String> HIGH_SEVERITY_KEYWORDS = Set.of(
             "burst", "flood", "leakage", "leak", "pipe burst", "water gushing",

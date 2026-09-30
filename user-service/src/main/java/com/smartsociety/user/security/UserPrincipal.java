@@ -1,7 +1,6 @@
 package com.smartsociety.user.security;
 
 import com.smartsociety.user.entity.User;
-import lombok.Getter;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -9,7 +8,6 @@ import org.springframework.security.core.userdetails.UserDetails;
 import java.util.Collection;
 import java.util.stream.Collectors;
 
-@Getter
 public class UserPrincipal implements UserDetails {
 
     private final Long id;
@@ -28,6 +26,14 @@ public class UserPrincipal implements UserDetails {
                 .map(role -> new SimpleGrantedAuthority(role.getName()))
                 .collect(Collectors.toSet());
         this.active = user.getIsActive() != null && user.getIsActive();
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public Long getSocietyId() {
+        return societyId;
     }
 
     @Override

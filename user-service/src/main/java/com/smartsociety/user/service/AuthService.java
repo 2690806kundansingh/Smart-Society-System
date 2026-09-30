@@ -9,8 +9,8 @@ import com.smartsociety.user.repository.ApartmentRepository;
 import com.smartsociety.user.repository.RoleRepository;
 import com.smartsociety.user.repository.UserRepository;
 import com.smartsociety.user.security.JwtTokenProvider;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -23,10 +23,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-@Slf4j
 @Service
-@RequiredArgsConstructor
 public class AuthService {
+
+    private static final Logger log = LoggerFactory.getLogger(AuthService.class);
 
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
@@ -34,6 +34,20 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
     private final JwtTokenProvider tokenProvider;
+
+    public AuthService(UserRepository userRepository,
+                       RoleRepository roleRepository,
+                       ApartmentRepository apartmentRepository,
+                       PasswordEncoder passwordEncoder,
+                       AuthenticationManager authenticationManager,
+                       JwtTokenProvider tokenProvider) {
+        this.userRepository = userRepository;
+        this.roleRepository = roleRepository;
+        this.apartmentRepository = apartmentRepository;
+        this.passwordEncoder = passwordEncoder;
+        this.authenticationManager = authenticationManager;
+        this.tokenProvider = tokenProvider;
+    }
 
     @Transactional
     public AuthResponse login(LoginRequest request) {

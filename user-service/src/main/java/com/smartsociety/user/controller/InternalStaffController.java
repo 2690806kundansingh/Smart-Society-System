@@ -2,20 +2,24 @@ package com.smartsociety.user.controller;
 
 import com.smartsociety.user.dto.StaffAvailabilityResponse;
 import com.smartsociety.user.service.UserService;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 
-@Slf4j
 @RestController
 @RequestMapping("/api/v1/internal/staff")
-@RequiredArgsConstructor
 public class InternalStaffController {
 
+    private static final Logger log = LoggerFactory.getLogger(InternalStaffController.class);
+
     private final UserService userService;
+
+    public InternalStaffController(UserService userService) {
+        this.userService = userService;
+    }
 
     @GetMapping("/{staffId}")
     public ResponseEntity<StaffAvailabilityResponse> getStaffAvailability(@PathVariable Long staffId) {

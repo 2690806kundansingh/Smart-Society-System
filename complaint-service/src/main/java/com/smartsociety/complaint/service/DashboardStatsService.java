@@ -4,8 +4,8 @@ import com.smartsociety.complaint.dto.DashboardStatsResponse;
 import com.smartsociety.complaint.entity.Complaint;
 import com.smartsociety.complaint.entity.ComplaintStatus;
 import com.smartsociety.complaint.repository.ComplaintRepository;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
@@ -16,12 +16,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-@Slf4j
 @Service
-@RequiredArgsConstructor
 public class DashboardStatsService {
 
+    private static final Logger log = LoggerFactory.getLogger(DashboardStatsService.class);
     private final ComplaintRepository complaintRepository;
+
+    public DashboardStatsService(ComplaintRepository complaintRepository) {
+        this.complaintRepository = complaintRepository;
+    }
 
     @Cacheable(value = "society-stats", key = "#societyId")
     @Transactional(readOnly = true)

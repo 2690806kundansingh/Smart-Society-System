@@ -1,8 +1,5 @@
 package com.smartsociety.complaint.entity;
 
-import lombok.Getter;
-
-@Getter
 public enum Priority {
     HIGH(2),      // 2 Hours SLA
     MEDIUM(12),   // 12 Hours SLA
@@ -12,5 +9,9 @@ public enum Priority {
 
     Priority(int slaHours) {
         this.slaHours = slaHours;
+    }
+
+    public int getSlaHours() {
+        return slaHours;
     }
 }

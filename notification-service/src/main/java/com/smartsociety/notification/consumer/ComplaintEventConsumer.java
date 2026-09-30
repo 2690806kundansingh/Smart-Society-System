@@ -3,8 +3,8 @@ package com.smartsociety.notification.consumer;
 import com.smartsociety.notification.dispatcher.MockDispatchService;
 import com.smartsociety.notification.dispatcher.WebSocketNotificationDispatcher;
 import com.smartsociety.notification.event.ComplaintEventPayload;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.kafka.annotation.DltHandler;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.annotation.RetryableTopic;
@@ -15,13 +15,19 @@ import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.stereotype.Component;
 
-@Slf4j
 @Component
-@RequiredArgsConstructor
 public class ComplaintEventConsumer {
+
+    private static final Logger log = LoggerFactory.getLogger(ComplaintEventConsumer.class);
 
     private final WebSocketNotificationDispatcher webSocketDispatcher;
     private final MockDispatchService mockDispatchService;
+
+    public ComplaintEventConsumer(WebSocketNotificationDispatcher webSocketDispatcher,
+                                  MockDispatchService mockDispatchService) {
+        this.webSocketDispatcher = webSocketDispatcher;
+        this.mockDispatchService = mockDispatchService;
+    }
 
     @RetryableTopic(
             attempts = "3",

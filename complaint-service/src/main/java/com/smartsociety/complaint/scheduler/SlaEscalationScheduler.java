@@ -9,9 +9,9 @@ import com.smartsociety.complaint.event.ComplaintEventType;
 import com.smartsociety.complaint.repository.ComplaintAuditLogRepository;
 import com.smartsociety.complaint.repository.ComplaintRepository;
 import com.smartsociety.complaint.service.DashboardStatsService;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,15 +19,25 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.Instant;
 import java.util.List;
 
-@Slf4j
 @Component
-@RequiredArgsConstructor
 public class SlaEscalationScheduler {
+
+    private static final Logger log = LoggerFactory.getLogger(SlaEscalationScheduler.class);
 
     private final ComplaintRepository complaintRepository;
     private final ComplaintAuditLogRepository auditLogRepository;
     private final ComplaintEventProducer eventProducer;
     private final DashboardStatsService dashboardStatsService;
+
+    public SlaEscalationScheduler(ComplaintRepository complaintRepository,
+                                  ComplaintAuditLogRepository auditLogRepository,
+                                  ComplaintEventProducer eventProducer,
+                                  DashboardStatsService dashboardStatsService) {
+        this.complaintRepository = complaintRepository;
+        this.auditLogRepository = auditLogRepository;
+        this.eventProducer = eventProducer;
+        this.dashboardStatsService = dashboardStatsService;
+    }
 
     private static final List<ComplaintStatus> TERMINAL_STATUSES = List.of(
             ComplaintStatus.RESOLVED,
