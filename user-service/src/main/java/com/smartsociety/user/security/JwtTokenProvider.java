@@ -32,6 +32,10 @@ public class JwtTokenProvider {
 
     public String generateAccessToken(Authentication authentication, Long userId, Long societyId) {
         UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
+        return generateAccessToken(userPrincipal);
+    }
+
+    public String generateAccessToken(UserPrincipal userPrincipal) {
         List<String> roles = userPrincipal.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
                 .toList();
@@ -43,8 +47,8 @@ public class JwtTokenProvider {
 
         return Jwts.builder()
                 .subject(userPrincipal.getUsername())
-                .claim("userId", userId)
-                .claim("societyId", societyId)
+                .claim("userId", userPrincipal.getId())
+                .claim("societyId", userPrincipal.getSocietyId())
                 .claim("role", primaryRole)
                 .claim("roles", roles)
                 .issuedAt(now)

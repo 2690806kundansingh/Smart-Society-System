@@ -8,6 +8,7 @@ import { NotificationToast } from './components/NotificationToast';
 import { ResidentPortal } from './components/ResidentPortal';
 import { StaffTaskPanel } from './components/StaffTaskPanel';
 import { AdminDashboard } from './components/AdminDashboard';
+import { userApi } from './services/api';
 import { 
   Building2, 
   ShieldCheck, 
@@ -20,10 +21,49 @@ import {
 } from 'lucide-react';
 
 export const App: React.FC = () => {
-  const { user, isAuthenticated } = useAuthStore();
+  const { user, isAuthenticated, setAuth } = useAuthStore();
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
   const [activeTab, setActiveTab] = useState<'resident' | 'staff' | 'admin'>('resident');
+
+  // Handle OAuth2 Redirect callback (e.g. from Google or GitHub login)
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const oauth2Token = urlParams.get('oauth2_token');
+    const refreshToken = urlParams.get('refreshToken');
+    const oauth2Error = urlParams.get('oauth2_error');
+
+    if (oauth2Error) {
+      alert(`OAuth2 Sign-In notice: ${oauth2Error}`);
+      window.history.replaceState({}, document.title, window.location.pathname);
+      return;
+    }
+
+    if (oauth2Token) {
+      // Temporarily store token so userApi.getCurrentUser() can authenticate
+      localStorage.setItem('access_token', oauth2Token);
+      if (refreshToken) {
+        localStorage.setItem('refresh_token', refreshToken);
+      }
+
+      userApi.getCurrentUser()
+        .then((currentUser) => {
+          setAuth({
+            accessToken: oauth2Token,
+            refreshToken: refreshToken || '',
+            tokenType: 'Bearer',
+            expiresIn: 86400000,
+            user: currentUser,
+          });
+        })
+        .catch((err) => {
+          console.error('Failed to load user profile after OAuth2 login:', err);
+        })
+        .finally(() => {
+          window.history.replaceState({}, document.title, window.location.pathname);
+        });
+    }
+  }, [setAuth]);
 
   // Sync active view tab with user's primary role on login
   useEffect(() => {

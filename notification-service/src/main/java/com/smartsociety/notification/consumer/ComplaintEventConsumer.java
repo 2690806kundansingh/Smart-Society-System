@@ -1,5 +1,6 @@
 package com.smartsociety.notification.consumer;
 
+import com.smartsociety.notification.dispatcher.GmailEmailDispatcher;
 import com.smartsociety.notification.dispatcher.MockDispatchService;
 import com.smartsociety.notification.dispatcher.WebSocketNotificationDispatcher;
 import com.smartsociety.notification.event.ComplaintEventPayload;
@@ -22,11 +23,14 @@ public class ComplaintEventConsumer {
 
     private final WebSocketNotificationDispatcher webSocketDispatcher;
     private final MockDispatchService mockDispatchService;
+    private final GmailEmailDispatcher gmailEmailDispatcher;
 
     public ComplaintEventConsumer(WebSocketNotificationDispatcher webSocketDispatcher,
-                                  MockDispatchService mockDispatchService) {
+                                  MockDispatchService mockDispatchService,
+                                  GmailEmailDispatcher gmailEmailDispatcher) {
         this.webSocketDispatcher = webSocketDispatcher;
         this.mockDispatchService = mockDispatchService;
+        this.gmailEmailDispatcher = gmailEmailDispatcher;
     }
 
     @RetryableTopic(
@@ -54,13 +58,16 @@ public class ComplaintEventConsumer {
             // 1. Dispatch real-time WebSocket toast alerts
             webSocketDispatcher.dispatch(payload);
 
-            // 2. Dispatch mock transactional SMS/Email notifications
+            // 2. Dispatch mock log alerts & live Gmail SMTP transactional emails
             if ("ASSIGNED".equalsIgnoreCase(payload.getEventType())) {
                 mockDispatchService.dispatchAssignedAlerts(payload);
+                gmailEmailDispatcher.sendAssignedAlert(payload);
             } else if ("SLA_BREACHED".equalsIgnoreCase(payload.getEventType())) {
                 mockDispatchService.dispatchSlaBreachAlerts(payload);
+                gmailEmailDispatcher.sendSlaBreachAlert(payload);
             } else if ("STATUS_UPDATED".equalsIgnoreCase(payload.getEventType())) {
                 mockDispatchService.dispatchStatusUpdateAlerts(payload);
+                gmailEmailDispatcher.sendStatusUpdateAlert(payload);
             }
 
             // 3. Manual ACK to commit offset

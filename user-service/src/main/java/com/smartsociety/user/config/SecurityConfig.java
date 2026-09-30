@@ -3,6 +3,10 @@ package com.smartsociety.user.config;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.smartsociety.user.security.CustomUserDetailsService;
 import com.smartsociety.user.security.JwtAuthenticationFilter;
+import com.smartsociety.user.security.oauth2.CustomOAuth2UserService;
+import com.smartsociety.user.security.oauth2.HttpCookieOAuth2AuthorizationRequestRepository;
+import com.smartsociety.user.security.oauth2.OAuth2AuthenticationFailureHandler;
+import com.smartsociety.user.security.oauth2.OAuth2AuthenticationSuccessHandler;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -33,13 +37,25 @@ public class SecurityConfig {
     private final CustomUserDetailsService userDetailsService;
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final ObjectMapper objectMapper;
+    private final CustomOAuth2UserService customOAuth2UserService;
+    private final OAuth2AuthenticationSuccessHandler oauth2AuthenticationSuccessHandler;
+    private final OAuth2AuthenticationFailureHandler oauth2AuthenticationFailureHandler;
+    private final HttpCookieOAuth2AuthorizationRequestRepository cookieAuthorizationRequestRepository;
 
     public SecurityConfig(CustomUserDetailsService userDetailsService,
                           JwtAuthenticationFilter jwtAuthenticationFilter,
-                          ObjectMapper objectMapper) {
+                          ObjectMapper objectMapper,
+                          CustomOAuth2UserService customOAuth2UserService,
+                          OAuth2AuthenticationSuccessHandler oauth2AuthenticationSuccessHandler,
+                          OAuth2AuthenticationFailureHandler oauth2AuthenticationFailureHandler,
+                          HttpCookieOAuth2AuthorizationRequestRepository cookieAuthorizationRequestRepository) {
         this.userDetailsService = userDetailsService;
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
         this.objectMapper = objectMapper;
+        this.customOAuth2UserService = customOAuth2UserService;
+        this.oauth2AuthenticationSuccessHandler = oauth2AuthenticationSuccessHandler;
+        this.oauth2AuthenticationFailureHandler = oauth2AuthenticationFailureHandler;
+        this.cookieAuthorizationRequestRepository = cookieAuthorizationRequestRepository;
     }
 
     @Bean
@@ -92,9 +108,24 @@ public class SecurityConfig {
                 )
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/v1/auth/**").permitAll()
+                        .requestMatchers("/oauth2/**", "/login/oauth2/**").permitAll()
                         .requestMatchers("/api/v1/internal/**").permitAll()
                         .requestMatchers("/actuator/**", "/error").permitAll()
                         .anyRequest().authenticated()
+                )
+                .oauth2Login(oauth2 -> oauth2
+                        .authorizationEndpoint(authorization -> authorization
+                                .baseUri("/oauth2/authorization")
+                                .authorizationRequestRepository(cookieAuthorizationRequestRepository)
+                        )
+                        .redirectionEndpoint(redirection -> redirection
+                                .baseUri("/login/oauth2/code/*")
+                        )
+                        .userInfoEndpoint(userInfo -> userInfo
+                                .userService(customOAuth2UserService)
+                        )
+                        .successHandler(oauth2AuthenticationSuccessHandler)
+                        .failureHandler(oauth2AuthenticationFailureHandler)
                 )
                 .authenticationProvider(authenticationProvider())
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);

@@ -22,11 +22,35 @@ spring:
     enabled: true
     baseline-on-migrate: true
     locations: classpath:db/migration
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-name: google
+            client-id: ${GOOGLE_CLIENT_ID:your-google-client-id}
+            client-secret: ${GOOGLE_CLIENT_SECRET:your-google-client-secret}
+            scope:
+              - email
+              - profile
+            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
+          github:
+            client-name: github
+            client-id: ${GITHUB_CLIENT_ID:your-github-client-id}
+            client-secret: ${GITHUB_CLIENT_SECRET:your-github-client-secret}
+            scope:
+              - user:email
+              - read:user
+            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
 
 jwt:
   secret: 404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970
   expiration-ms: 86400000 # 24 hours
   refresh-expiration-ms: 604800000 # 7 days
+
+app:
+  oauth2:
+    redirect-uri: ${OAUTH2_FRONTEND_REDIRECT_URI:http://localhost:5173/}
 
 eureka:
   instance:
