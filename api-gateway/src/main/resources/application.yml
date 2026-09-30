@@ -1,5 +1,5 @@
 server:
-  port: 8080
+  port: ${GATEWAY_PORT:8085}
 
 spring:
   application:
@@ -60,6 +60,9 @@ management:
       show-details: always
 
 ---
+server:
+  port: 8080
+
 spring:
   config:
     activate:

@@ -11,19 +11,19 @@ export default defineConfig({
     host: true,
     proxy: {
       '/api': {
-        target: 'http://localhost:8080',
+        target: 'http://localhost:8085',
         changeOrigin: true
       },
       '/oauth2': {
-        target: 'http://localhost:8080',
+        target: 'http://localhost:8085',
         changeOrigin: true
       },
       '/login/oauth2': {
-        target: 'http://localhost:8080',
+        target: 'http://localhost:8085',
         changeOrigin: true
       },
       '/ws-notifications': {
-        target: 'http://localhost:8080',
+        target: 'http://localhost:8085',
         ws: true,
         changeOrigin: true
       }

@@ -30,7 +30,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
     public CustomOAuth2UserService(UserRepository userRepository,
                                    RoleRepository roleRepository,
-                                   PasswordEncoder passwordEncoder) {
+                                   @org.springframework.context.annotation.Lazy PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.passwordEncoder = passwordEncoder;

@@ -41,6 +41,7 @@ public class SecurityConfig {
     private final OAuth2AuthenticationSuccessHandler oauth2AuthenticationSuccessHandler;
     private final OAuth2AuthenticationFailureHandler oauth2AuthenticationFailureHandler;
     private final HttpCookieOAuth2AuthorizationRequestRepository cookieAuthorizationRequestRepository;
+    private final PasswordEncoder passwordEncoder;
 
     public SecurityConfig(CustomUserDetailsService userDetailsService,
                           JwtAuthenticationFilter jwtAuthenticationFilter,
@@ -48,7 +49,8 @@ public class SecurityConfig {
                           CustomOAuth2UserService customOAuth2UserService,
                           OAuth2AuthenticationSuccessHandler oauth2AuthenticationSuccessHandler,
                           OAuth2AuthenticationFailureHandler oauth2AuthenticationFailureHandler,
-                          HttpCookieOAuth2AuthorizationRequestRepository cookieAuthorizationRequestRepository) {
+                          HttpCookieOAuth2AuthorizationRequestRepository cookieAuthorizationRequestRepository,
+                          PasswordEncoder passwordEncoder) {
         this.userDetailsService = userDetailsService;
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
         this.objectMapper = objectMapper;
@@ -56,18 +58,14 @@ public class SecurityConfig {
         this.oauth2AuthenticationSuccessHandler = oauth2AuthenticationSuccessHandler;
         this.oauth2AuthenticationFailureHandler = oauth2AuthenticationFailureHandler;
         this.cookieAuthorizationRequestRepository = cookieAuthorizationRequestRepository;
-    }
-
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Bean
     public DaoAuthenticationProvider authenticationProvider() {
         DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
         authProvider.setUserDetailsService(userDetailsService);
-        authProvider.setPasswordEncoder(passwordEncoder());
+        authProvider.setPasswordEncoder(passwordEncoder);
         return authProvider;
     }
 

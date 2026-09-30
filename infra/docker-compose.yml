@@ -3,7 +3,7 @@ services:
   # INFRASTRUCTURE SERVICES
   # -------------------------------------------------------------
   postgres:
-    image: postgres:16-alpine
+    image: postgres:15-alpine
     container_name: society-postgres
     restart: unless-stopped
     environment:
@@ -11,7 +11,7 @@ services:
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: postgres
     ports:
-      - "5432:5432"
+      - "${POSTGRES_HOST_PORT:-5434}:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./scripts/init-multiple-dbs.sql:/docker-entrypoint-initdb.d/init-multiple-dbs.sql
@@ -24,7 +24,7 @@ services:
       - society-network
 
   redis:
-    image: redis:7-alpine
+    image: redis:7
     container_name: society-redis
     restart: unless-stopped
     command: redis-server --appendonly yes
@@ -40,41 +40,31 @@ services:
     networks:
       - society-network
 
-  zookeeper:
-    image: confluentinc/cp-zookeeper:7.5.0
-    container_name: society-zookeeper
-    restart: unless-stopped
-    environment:
-      ZOOKEEPER_CLIENT_PORT: 2181
-      ZOOKEEPER_TICK_TIME: 2000
-    ports:
-      - "2181:2181"
-    networks:
-      - society-network
-
   kafka:
-    image: confluentinc/cp-kafka:7.5.0
+    image: apache/kafka:4.3.1
     container_name: society-kafka
     restart: unless-stopped
-    depends_on:
-      - zookeeper
     ports:
-      - "9092:9092"
-      - "29092:29092"
+      - "9092:29092"
     environment:
-      KAFKA_BROKER_ID: 1
-      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_HOST://localhost:29092
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,PLAINTEXT_HOST://0.0.0.0:29092,CONTROLLER://0.0.0.0:9093
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_HOST://localhost:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@localhost:9093
       KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
-      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
     healthcheck:
-      test: ["CMD", "kafka-broker-api-versions", "--bootstrap-server", "localhost:9092"]
+      test: ["CMD-SHELL", "/opt/kafka/bin/kafka-broker-api-versions.sh --bootstrap-server localhost:9092 || exit 1"]
       interval: 10s
-      timeout: 10s
+      timeout: 5s
       retries: 10
-      start_period: 15s
+      start_period: 10s
     networks:
       - society-network
 
@@ -107,7 +97,7 @@ services:
     container_name: society-api-gateway
     restart: unless-stopped
     ports:
-      - "8080:8080"
+      - "${GATEWAY_HOST_PORT:-8085}:8080"
     depends_on:
       discovery-service:
         condition: service_healthy
