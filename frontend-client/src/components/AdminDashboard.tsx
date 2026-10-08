@@ -353,6 +353,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ societyId }) => 
               <tr>
                 <th className="p-3">Ticket</th>
                 <th className="p-3">Resident</th>
+                <th className="p-3">Issue Photo</th>
                 <th className="p-3">Title</th>
                 <th className="p-3">Priority</th>
                 <th className="p-3">Status</th>
@@ -366,7 +367,25 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ societyId }) => 
                   <td className="p-3 font-mono font-bold text-slate-700">#{ticket.id}</td>
                   <td className="p-3 text-slate-600">Resident #{ticket.residentId}</td>
                   <td className="p-3">
+                    {ticket.photoUrl ? (
+                      <a href={ticket.photoUrl} target="_blank" rel="noreferrer" title="Click to view issue photo">
+                        <img
+                          src={ticket.photoUrl}
+                          alt="Issue"
+                          className="w-10 h-10 object-cover rounded-md border border-slate-300 shadow-xs hover:scale-110 transition-transform"
+                        />
+                      </a>
+                    ) : (
+                      <span className="text-[10px] text-slate-400 font-mono">No Photo</span>
+                    )}
+                  </td>
+                  <td className="p-3">
                     <span className="font-semibold text-slate-900">{ticket.title}</span>
+                    {ticket.locationDetails && (
+                      <div className="text-[10px] text-emerald-800 font-medium truncate max-w-xs">
+                        {ticket.locationDetails}
+                      </div>
+                    )}
                   </td>
                   <td className="p-3">
                     <span

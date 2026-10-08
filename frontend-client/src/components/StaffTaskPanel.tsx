@@ -213,9 +213,34 @@ export const StaffTaskPanel: React.FC<StaffTaskPanelProps> = ({ staffId, society
                           <p className="text-xs text-slate-600 line-clamp-2 mt-1">
                             {ticket.description}
                           </p>
+
+                          {/* Reported Problem Image on Staff Card */}
+                          {ticket.photoUrl && (
+                            <div className="mt-2.5 rounded-lg overflow-hidden border border-slate-200 bg-slate-50 p-1.5 flex items-center space-x-2">
+                              <img
+                                src={ticket.photoUrl}
+                                alt="Reported Problem"
+                                className="w-14 h-14 object-cover rounded-md border border-slate-300 flex-shrink-0"
+                              />
+                              <div className="text-[11px] space-y-0.5">
+                                <span className="font-bold text-slate-800 flex items-center">
+                                  <Camera className="w-3 h-3 text-slate-500 mr-1" /> Reported Problem Image
+                                </span>
+                                <a
+                                  href={ticket.photoUrl}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  className="text-blue-600 hover:underline font-semibold block text-[10px]"
+                                >
+                                  View Full Photo ↗
+                                </a>
+                              </div>
+                            </div>
+                          )}
+
                           {ticket.locationDetails && (
-                            <p className="text-[11px] text-slate-400 mt-1">
-                              📍 {ticket.locationDetails}
+                            <p className="text-[11px] text-emerald-800 font-medium bg-emerald-50 p-1.5 rounded border border-emerald-200 mt-2">
+                              {ticket.locationDetails}
                             </p>
                           )}
                         </div>
