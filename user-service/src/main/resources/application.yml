@@ -1,5 +1,6 @@
 server:
   port: 8081
+  forward-headers-strategy: framework
 
 spring:
   application:
@@ -28,7 +29,7 @@ spring:
         registration:
           google:
             client-name: google
-            client-id: ${GOOGLE_CLIENT_ID:your-google-client-id}
+            client-id: ${GOOGLE_CLIENT_ID:477059467127-cdn9gtefbmennk6op9ukp23j7djdpbcp.apps.googleusercontent.com}
             client-secret: ${GOOGLE_CLIENT_SECRET:your-google-client-secret}
             scope:
               - email
@@ -36,7 +37,7 @@ spring:
             redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
           github:
             client-name: github
-            client-id: ${GITHUB_CLIENT_ID:your-github-client-id}
+            client-id: ${GITHUB_CLIENT_ID:Iv23li9s3EpYsIfHXAey}
             client-secret: ${GITHUB_CLIENT_SECRET:your-github-client-secret}
             scope:
               - user:email
