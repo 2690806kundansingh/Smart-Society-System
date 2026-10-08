@@ -1,12 +1,13 @@
 import React from 'react';
 import { useAuthStore } from '../store/authStore';
-import { Building2, User, LogOut, Shield, Wrench, Home, Users } from 'lucide-react';
+import { Building2, User, LogOut, Shield, Wrench, Home, Users, BookOpen } from 'lucide-react';
 
 interface NavbarProps {
   onOpenSwitchPersona: () => void;
+  onOpenGuide: () => void;
 }
 
-export const Navbar: React.FC<NavbarProps> = ({ onOpenSwitchPersona }) => {
+export const Navbar: React.FC<NavbarProps> = ({ onOpenSwitchPersona, onOpenGuide }) => {
   const { user, logout } = useAuthStore();
 
   const getRoleBadge = () => {
@@ -52,40 +53,48 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenSwitchPersona }) => {
           </div>
         </div>
 
-        {/* Current User & Actions */}
-        {user ? (
-          <div className="flex items-center space-x-4">
-            <div className="hidden sm:flex flex-col items-end text-right">
-              <div className="flex items-center space-x-2">
-                <span className="text-sm font-semibold text-slate-800">{user.fullName}</span>
-                {getRoleBadge()}
+        {/* Action Buttons */}
+        <div className="flex items-center space-x-3">
+          <button
+            onClick={onOpenGuide}
+            className="inline-flex items-center px-3 py-1.5 text-xs font-bold rounded-lg text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 transition-colors shadow-xs"
+          >
+            <BookOpen className="w-3.5 h-3.5 mr-1.5 text-emerald-600" />
+            <span>How to Use</span>
+          </button>
+
+          {user ? (
+            <div className="flex items-center space-x-3">
+              <div className="hidden sm:flex flex-col items-end text-right">
+                <div className="flex items-center space-x-2">
+                  <span className="text-sm font-semibold text-slate-800">{user.fullName}</span>
+                  {getRoleBadge()}
+                </div>
+                <span className="text-xs text-slate-500">
+                  {user.apartment || user.email} • Society #{user.societyId}
+                </span>
               </div>
-              <span className="text-xs text-slate-500">
-                {user.apartment || user.email} • Society #{user.societyId}
-              </span>
+
+              {/* Quick Demo Persona Switcher */}
+              <button
+                onClick={onOpenSwitchPersona}
+                className="inline-flex items-center px-3 py-1.5 text-xs font-medium rounded-lg text-slate-700 bg-slate-100 hover:bg-slate-200 border border-slate-300 transition-colors shadow-xs"
+                title="Switch demo user"
+              >
+                <Users className="w-3.5 h-3.5 mr-1.5 text-slate-600" />
+                Switch Persona
+              </button>
+
+              {/* Logout */}
+              <button
+                onClick={logout}
+                className="p-2 text-slate-500 hover:text-red-600 rounded-lg hover:bg-slate-100 transition-colors"
+                title="Sign out"
+              >
+                <LogOut className="w-5 h-5" />
+              </button>
             </div>
-
-            {/* Quick Demo Persona Switcher */}
-            <button
-              onClick={onOpenSwitchPersona}
-              className="inline-flex items-center px-3 py-1.5 text-xs font-medium rounded-lg text-slate-700 bg-slate-100 hover:bg-slate-200 border border-slate-300 transition-colors shadow-sm"
-              title="Switch demo user"
-            >
-              <Users className="w-3.5 h-3.5 mr-1.5 text-slate-600" />
-              Switch Persona
-            </button>
-
-            {/* Logout */}
-            <button
-              onClick={logout}
-              className="p-2 text-slate-500 hover:text-red-600 rounded-lg hover:bg-slate-100 transition-colors"
-              title="Sign out"
-            >
-              <LogOut className="w-5 h-5" />
-            </button>
-          </div>
-        ) : (
-          <div className="flex items-center space-x-3">
+          ) : (
             <button
               onClick={onOpenSwitchPersona}
               className="inline-flex items-center px-4 py-2 text-sm font-medium rounded-lg text-white bg-emerald-600 hover:bg-emerald-700 shadow-sm transition-colors"
@@ -93,8 +102,8 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenSwitchPersona }) => {
               <User className="w-4 h-4 mr-2" />
               Sign In / Select Persona
             </button>
-          </div>
-        )}
+          )}
+        </div>
       </div>
     </header>
   );

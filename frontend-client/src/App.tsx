@@ -4,6 +4,7 @@ import { wsService } from './services/websocket';
 import { NotificationItem } from './types';
 import { Navbar } from './components/Navbar';
 import { LoginModal } from './components/LoginModal';
+import { GuideModal } from './components/GuideModal';
 import { NotificationToast } from './components/NotificationToast';
 import { ResidentPortal } from './components/ResidentPortal';
 import { StaffTaskPanel } from './components/StaffTaskPanel';
@@ -17,12 +18,14 @@ import {
   ArrowRight, 
   CheckCircle2, 
   Zap, 
-  Bell 
+  Bell,
+  BookOpen
 } from 'lucide-react';
 
 export const App: React.FC = () => {
   const { user, isAuthenticated, setAuth } = useAuthStore();
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+  const [isGuideModalOpen, setIsGuideModalOpen] = useState(false);
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
   const [activeTab, setActiveTab] = useState<'resident' | 'staff' | 'admin'>('resident');
 
@@ -96,7 +99,10 @@ export const App: React.FC = () => {
   return (
     <div className="min-h-screen flex flex-col bg-slate-100/70 text-slate-900">
       {/* Navbar */}
-      <Navbar onOpenSwitchPersona={() => setIsLoginModalOpen(true)} />
+      <Navbar 
+        onOpenSwitchPersona={() => setIsLoginModalOpen(true)} 
+        onOpenGuide={() => setIsGuideModalOpen(true)}
+      />
 
       {/* Main Content */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -115,12 +121,19 @@ export const App: React.FC = () => {
                 Spring Cloud Gateway, Apache Kafka event streams, Redis cache-aside, ShedLock SLA
                 escalations, and React TypeScript.
               </p>
-              <div className="pt-2">
+              <div className="pt-2 flex flex-wrap items-center justify-center gap-3">
                 <button
                   onClick={() => setIsLoginModalOpen(true)}
                   className="inline-flex items-center px-6 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm shadow-lg hover:shadow-xl transition-all"
                 >
                   Launch Interactive Demo <ArrowRight className="w-4 h-4 ml-2" />
+                </button>
+
+                <button
+                  onClick={() => setIsGuideModalOpen(true)}
+                  className="inline-flex items-center px-5 py-3 rounded-xl bg-white hover:bg-slate-50 text-slate-800 font-bold text-sm border border-slate-300 shadow-sm transition-all"
+                >
+                  <BookOpen className="w-4 h-4 mr-2 text-emerald-600" /> System Guide & Instructions
                 </button>
               </div>
             </div>
@@ -241,6 +254,13 @@ export const App: React.FC = () => {
       <LoginModal
         isOpen={isLoginModalOpen}
         onClose={() => setIsLoginModalOpen(false)}
+      />
+
+      {/* System Instructions & User Guide Modal */}
+      <GuideModal
+        isOpen={isGuideModalOpen}
+        onClose={() => setIsGuideModalOpen(false)}
+        onOpenLogin={() => setIsLoginModalOpen(true)}
       />
 
       {/* Footer */}
