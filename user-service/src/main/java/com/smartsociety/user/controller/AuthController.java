@@ -34,4 +34,14 @@ public class AuthController {
     public ResponseEntity<AuthResponse> refreshToken(@Valid @RequestBody RefreshTokenRequest request) {
         return ResponseEntity.ok(authService.refreshToken(request));
     }
+
+    @PostMapping("/otp/send")
+    public ResponseEntity<com.smartsociety.user.dto.OtpResponse> sendOtp(@Valid @RequestBody com.smartsociety.user.dto.SendOtpRequest request) {
+        return ResponseEntity.ok(authService.sendOtp(request));
+    }
+
+    @PostMapping("/otp/verify")
+    public ResponseEntity<AuthResponse> verifyOtp(@Valid @RequestBody com.smartsociety.user.dto.VerifyOtpRequest request) {
+        return ResponseEntity.ok(authService.verifyOtp(request));
+    }
 }

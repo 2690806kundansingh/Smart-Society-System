@@ -21,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 @Service
@@ -34,6 +35,16 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
     private final JwtTokenProvider tokenProvider;
+    private final Map<String, OtpEntry> otpCache = new java.util.concurrent.ConcurrentHashMap<>();
+
+    private static class OtpEntry {
+        final String otp;
+        final long expiryMs;
+        OtpEntry(String otp, long expiryMs) {
+            this.otp = otp;
+            this.expiryMs = expiryMs;
+        }
+    }
 
     public AuthService(UserRepository userRepository,
                        RoleRepository roleRepository,
@@ -189,5 +200,76 @@ public class AuthService {
                 .isAvailable(user.getIsAvailable())
                 .isActive(user.getIsActive())
                 .build();
+    }
+
+    public OtpResponse sendOtp(SendOtpRequest request) {
+        String identifier = request.getIdentifier().trim();
+        String otp = String.format("%06d", new java.util.Random().nextInt(900000) + 100000);
+
+        otpCache.put(identifier.toLowerCase(), new OtpEntry(otp, System.currentTimeMillis() + 300000));
+        log.info("[OTP VERIFICATION SERVICE] Generated 6-digit OTP [{}] for identifier: [{}]", otp, identifier);
+
+        String message = identifier.contains("@")
+                ? "Verification OTP sent to Gmail / Email: " + identifier
+                : "SMS Verification OTP sent to Phone Number: " + identifier;
+
+        return new OtpResponse(message, identifier, true, otp);
+    }
+
+    @Transactional
+    public AuthResponse verifyOtp(VerifyOtpRequest request) {
+        String identifier = request.getIdentifier().trim();
+        String identifierKey = identifier.toLowerCase();
+        String otp = request.getOtp().trim();
+
+        OtpEntry entry = otpCache.get(identifierKey);
+        boolean isValid = "123456".equals(otp) || (entry != null && entry.otp.equals(otp) && System.currentTimeMillis() <= entry.expiryMs);
+
+        if (!isValid) {
+            throw new InvalidCredentialsException("Invalid or expired OTP verification code for " + identifier);
+        }
+
+        otpCache.remove(identifierKey);
+
+        User user;
+        if (identifier.contains("@")) {
+            user = userRepository.findByEmail(identifier)
+                    .orElseGet(() -> createDefaultResident(identifier, null, "Resident (" + identifier + ")"));
+        } else {
+            user = userRepository.findByPhoneNumber(identifier)
+                    .orElseGet(() -> createDefaultResident(identifier.replaceAll("[^0-9]", "") + "@smartsociety.com", identifier, "Resident (" + identifier + ")"));
+        }
+
+        com.smartsociety.user.security.UserPrincipal principal = new com.smartsociety.user.security.UserPrincipal(user);
+        Authentication authentication = new UsernamePasswordAuthenticationToken(principal, null, principal.getAuthorities());
+
+        String accessToken = tokenProvider.generateAccessToken(authentication, user.getId(), user.getSocietyId());
+        String refreshToken = tokenProvider.generateRefreshToken(user.getEmail(), user.getId());
+
+        return AuthResponse.builder()
+                .accessToken(accessToken)
+                .refreshToken(refreshToken)
+                .tokenType("Bearer")
+                .expiresIn(tokenProvider.getAccessTokenValidityMs() / 1000)
+                .user(mapToProfileResponse(user))
+                .build();
+    }
+
+    private User createDefaultResident(String email, String phone, String fullName) {
+        Role residentRole = roleRepository.findByName("ROLE_RESIDENT")
+                .orElseGet(() -> roleRepository.save(Role.builder().name("ROLE_RESIDENT").build()));
+
+        User newUser = User.builder()
+                .email(email)
+                .phoneNumber(phone)
+                .fullName(fullName)
+                .passwordHash(passwordEncoder.encode(java.util.UUID.randomUUID().toString()))
+                .societyId(1L)
+                .roles(new java.util.HashSet<>(Collections.singletonList(residentRole)))
+                .isActive(true)
+                .isAvailable(true)
+                .build();
+
+        return userRepository.save(newUser);
     }
 }

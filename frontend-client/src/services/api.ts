@@ -109,6 +109,14 @@ export const authApi = {
     const res = await api.post<AuthResponse>('/api/v1/auth/register', data);
     return res.data;
   },
+  sendOtp: async (data: { identifier: string; type?: string }) => {
+    const res = await api.post<{ message: string; identifier: string; success: boolean; debugOtp?: string }>('/api/v1/auth/otp/send', data);
+    return res.data;
+  },
+  verifyOtp: async (data: { identifier: string; otp: string }) => {
+    const res = await api.post<AuthResponse>('/api/v1/auth/otp/verify', data);
+    return res.data;
+  },
 };
 
 export const complaintApi = {
