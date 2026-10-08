@@ -333,26 +333,83 @@ export const ResidentPortal: React.FC<ResidentPortalProps> = ({ residentId, soci
                     </div>
                   </div>
 
-                  {/* Resolution Notes Display (if completed) */}
-                  {item.resolutionNotes && (
-                    <div className="mt-4 p-3 rounded-lg bg-emerald-50/70 border border-emerald-200 text-xs text-emerald-900 flex items-start space-x-2">
-                      <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0 mt-0.5" />
-                      <div>
-                        <span className="font-semibold">Resolution Notes: </span>
-                        {item.resolutionNotes}
-                        {item.resolutionPhotoUrl && (
-                          <div className="mt-2">
-                            <a
-                              href={item.resolutionPhotoUrl}
-                              target="_blank"
-                              rel="noreferrer"
-                              className="text-emerald-700 underline font-medium inline-flex items-center"
-                            >
-                              <ImageIcon className="w-3.5 h-3.5 mr-1" /> View Resolution Photo
-                            </a>
+                  {/* Issue Photo & GPS Tag display if present */}
+                  {item.photoUrl && (
+                    <div className="mt-3 p-2.5 rounded-lg bg-slate-50 border border-slate-200 flex items-center space-x-3">
+                      <img
+                        src={item.photoUrl}
+                        alt="Issue Photo"
+                        className="w-16 h-16 object-cover rounded-lg border border-slate-300 shadow-xs"
+                      />
+                      <div className="text-xs space-y-1">
+                        <span className="font-bold text-slate-800 flex items-center">
+                          <ImageIcon className="w-3.5 h-3.5 text-slate-600 mr-1" /> Attached Issue Photo
+                        </span>
+                        {item.locationDetails && (
+                          <div className="text-[11px] text-emerald-800 font-medium bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200 inline-flex items-center">
+                            <span>{item.locationDetails}</span>
                           </div>
                         )}
                       </div>
+                    </div>
+                  )}
+
+                  {/* Resolution Notes & Fulfillment Receipt Display (if completed) */}
+                  {(item.status === 'RESOLVED' || item.status === 'CLOSED') && (
+                    <div className="mt-4 p-4 rounded-xl bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-300 shadow-xs space-y-3">
+                      <div className="flex items-center justify-between border-b border-emerald-200/80 pb-2">
+                        <div className="flex items-center text-xs font-extrabold text-emerald-900 space-x-1.5">
+                          <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                          <span>🎉 COMPLAINT FULFILLED & RESOLVED SUCCESSFULLY</span>
+                        </div>
+                        {item.resolvedAt && (
+                          <span className="text-[10px] text-emerald-700 font-mono">
+                            Resolved on {new Date(item.resolvedAt).toLocaleString()}
+                          </span>
+                        )}
+                      </div>
+
+                      {item.resolutionNotes && (
+                        <div className="text-xs text-emerald-950 leading-relaxed">
+                          <span className="font-bold text-emerald-900">Work Summary: </span>
+                          {item.resolutionNotes}
+                        </div>
+                      )}
+
+                      {/* Before & After Photo Proof Comparison */}
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                        {item.photoUrl && (
+                          <div className="bg-white p-2 rounded-lg border border-slate-200 text-xs space-y-1">
+                            <span className="font-bold text-slate-700 text-[11px] block">1. Reported Issue Photo (Before):</span>
+                            <img src={item.photoUrl} alt="Before" className="w-full h-24 object-cover rounded-md border" />
+                          </div>
+                        )}
+                        {item.resolutionPhotoUrl && (
+                          <div className="bg-white p-2 rounded-lg border border-emerald-300 text-xs space-y-1">
+                            <span className="font-bold text-emerald-800 text-[11px] block">2. Repair Completion Photo (After):</span>
+                            <img src={item.resolutionPhotoUrl} alt="After" className="w-full h-24 object-cover rounded-md border" />
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Post-Resolution Review Rating Prompt */}
+                      {item.feedback ? (
+                        <div className="pt-2 flex items-center space-x-2 text-xs text-emerald-900 font-semibold border-t border-emerald-200/80">
+                          <Star className="w-4 h-4 text-amber-500 fill-amber-500" />
+                          <span>Your Rating: {item.feedback.rating}/5 — "{item.feedback.review}"</span>
+                        </div>
+                      ) : (
+                        <div className="pt-2 flex items-center justify-between border-t border-emerald-200/80">
+                          <span className="text-xs text-emerald-800 font-medium">How was the maintenance service?</span>
+                          <button
+                            onClick={() => setSelectedComplaintForFeedback(item)}
+                            className="inline-flex items-center px-3 py-1 bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold rounded-lg shadow-sm transition-colors"
+                          >
+                            <Star className="w-3.5 h-3.5 mr-1 fill-amber-200" />
+                            Rate Service & Feedback
+                          </button>
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>
